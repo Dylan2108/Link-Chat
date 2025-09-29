@@ -15,14 +15,14 @@ class Protocol:
     @staticmethod
     def create_message(message_type,data):
         #Crea payload del protocolo
-        msg_type = struct.pack(('B',message_type.value))
+        msg_type = struct.pack('B',message_type.value)
         data_bytes = data.encode('utf-8') if isinstance(data,str) else data
         length = struct.pack('!H',len(data_bytes))
 
         #Calcular checksum simple
         checksum = sum(data_bytes) % 65536
         checksum_bytes = struct.pack('!H',checksum)
-        return msg_type + length + data_bytes + checksum
+        return msg_type + length + data_bytes + checksum_bytes
 
     @staticmethod
     def parse_message(payload):
@@ -37,7 +37,7 @@ class Protocol:
             return None
         
         data = payload[3:3 + length]
-        received_checksum = struct.unpack('!H',payload)[3+length:5+length][0]
+        received_checksum = struct.unpack('!H',payload[3+length:5+length])[0]
         calculated_checksum = sum(data) % 65536
 
         if received_checksum != calculated_checksum:

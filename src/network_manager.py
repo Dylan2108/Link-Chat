@@ -5,8 +5,8 @@ from frame_builder import FrameBuilder
 from discovery import NetworkDiscovery
 
 class NetworkManager:
-    def __init__(self):
-        self.socket_manager = RawSocketHandler()
+    def __init__(self,interface):
+        self.socket_manager = RawSocketHandler(interface)
         self.frame_builder = FrameBuilder()
         self.discovery = NetworkDiscovery(self.socket_manager,self.frame_builder)
         self.running = False
@@ -22,13 +22,15 @@ class NetworkManager:
         self.receive_thread = threading.Thread(target=self.receive_loop)
         self.receive_thread.daemon = True
         self.receive_thread.start()
+
+        return True
     
     def receive_loop(self):
         #Bucle de recepcion
         while self.running:
             frame , addr = self.socket_manager.receive_frame()
             if frame:
-                self.process_frame(frame)
+                self._process_frame(frame)
             
     def _process_frame(self,frame):
         #Procesar Frame

@@ -1,5 +1,6 @@
 import socket
-
+import os
+from protocol import Protocol
 class RawSocketHandler:
     def __init__(self , interface = 'ens33'):
         self.interface = interface

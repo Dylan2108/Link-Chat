@@ -1,0 +1,38 @@
+from protocol import MessageType
+from network_manager import NetworkManager
+from console_ui import ConsoleUI
+#Usar transferencia de archivos
+from message_handler import MessageHandler
+
+class AppController:
+    def __init__(self,interface):
+        self.network = NetworkManager(interface)
+        #Manejar transferencia de archivos
+        self.ui = ConsoleUI(self)
+        self.message_handler =  MessageHandler(self.ui)
+
+        self.network.register_callback(self.message_handler.handle_incoming_message)
+    def start_application(self):
+        if not self.network.start():
+            print("Error iniciando servicios de red")
+            return False
+        
+        self.ui.start_interactive_mode()
+        return True
+    
+    def send_text_message(self,dest_mac,message):
+        return self.network.send_message(dest_mac,MessageType.Message,message)
+    
+    #Metodo para enviar archivo
+
+    def discover_peers(self):
+        return self.network.discovery.broadcast_discovery()
+
+    def discovered_peers(self):
+        return self.network.discovery.peers
+
+    def get_mac_address(self):
+        return self.network.socket_manager.mac_address
+    
+    def shutdown(self):
+        return self.network.stop()

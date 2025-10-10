@@ -3,11 +3,12 @@ from enum import Enum
 
 class MessageType(Enum):
     Discovery = 0x01
-    Message = 0x02
-    File_Request = 0x03
-    File_Chunk = 0x04
-    File_Complete = 0x05
-    ACK = 0x06
+    Discovery_Response = 0x02
+    Message = 0x03
+    File_Request = 0x04
+    File_Chunk = 0x05
+    File_Complete = 0x06
+    ACK = 0x07
 
 class Protocol:
     ETH_TYPE = 0x88B5

@@ -34,6 +34,7 @@ class NetworkManager:
             
     def _process_frame(self,frame):
         #Procesar Frame
+        # print("Procesando frame")
         parsed_frame = self.frame_builder.parse_ethernet_frame(frame)
         if not parsed_frame or parsed_frame['eth_type'] != Protocol.ETH_TYPE:
             return
@@ -42,9 +43,36 @@ class NetworkManager:
         if not parsed_message:
             return
         
+        src_mac = parsed_frame['src_mac']
+        msg_type = parsed_message['type']
+        data = parsed_message['data']
+        
+        if msg_type == MessageType.Discovery:
+            self.discovery.handle_discovery_response(data)
+            print("Dispositivo encontrado")
+            self.send_discovery_response(src_mac)
+            return
+        
+        if msg_type == MessageType.Discovery_Response:
+            self.discovery.handle_discovery_response(data)
+            print("Dispostivo encontrado")
+            return
+        
+        if msg_type == MessageType.ACK:
+            print("Mensaje enviado correctamente")
+            return
+        
         #Notificar a callbacks registrados
         for callback in self.message_callbacks:
-            callback(parsed_frame['src_mac'],parsed_message['type'],parsed_message['data'])
+            try:
+                callback(src_mac,msg_type,data)
+                self.send_message(src_mac,MessageType.ACK,"Mensaje Recibido")
+            except Exception as e:
+                print(f"Error en callback : {e}")
+    
+    def send_discovery_response(self,dest_mac):
+        discovery_data = f"Discovery:{self.socket_manager.mac_address}"
+        self.send_message(dest_mac,MessageType.Discovery_Response,discovery_data)
     
     def send_message(self,dest_mac,message_type,data):
         #Enviar mensaje

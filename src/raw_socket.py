@@ -16,7 +16,7 @@ class RawSocketHandler:
     def create_socket(self):
         #Crea Socket-Raw
         try:
-            self.socket = socket.socket(socket.AF_PACKET,socket.SOCK_RAW,socket.htons(0x0003))
+            self.socket = socket.socket(socket.AF_PACKET,socket.SOCK_RAW,socket.htons(Protocol.ETH_TYPE))
             self.socket.bind((self.interface,0))
             return True
         except Exception as e:
@@ -38,7 +38,7 @@ class RawSocketHandler:
                 return self.socket.recvfrom(65536)
             except Exception as e:
                 return None , None
-            return None , None
+        return None , None
     def close(self):
         #Cerrar socket
         if self.socket:

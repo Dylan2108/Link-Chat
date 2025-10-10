@@ -1,3 +1,4 @@
+import time
 from protocol import Protocol , MessageType
 
 class NetworkDiscovery:
@@ -21,3 +22,19 @@ class NetworkDiscovery:
         )
 
         return self.socket_manager.send_frame(frame)
+    
+    def handle_discovery_response(self,data):
+        #Manejar respuesta de descubrimiento
+        try:
+            discovery_data = data.decode('utf-8')
+            if discovery_data.startswith('Discovery:'):
+                peer_mac = discovery_data.split('Discovery:')[1]
+                # if peer_mac != src_mac:
+                #     print("Error en la MAC")
+                
+                self.peers[peer_mac] = time.time()
+                # print("Dispositivo encontrado")
+                return True
+        except:
+            pass
+        return False

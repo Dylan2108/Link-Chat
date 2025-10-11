@@ -23,7 +23,9 @@ class ConsoleUI:
                     mac = command[1]
                     message = " ".join(command[2:])
                     self.controller.send_text_message(mac,message)
-                #Faltaria condicional para archivos
+                elif command[0] == "file" and len(command) >= 3:
+                     mac , file_path = command[1] , command[2]
+                     self.controller.send_file(mac,file_path)
                 else:
                     print("Comando invalido")
             except KeyboardInterrupt:
@@ -35,7 +37,7 @@ class ConsoleUI:
             print("discover - Buscar dispositivos en la red")
             print("list - Listar dispositivos encontrados")
             print("msg <mac><mensaje> - Enviar mensaje")
-            #Imprimir opcion de archivo
+            print("file <mac><ruta>")
             print("quit - salir")
             print()
         
@@ -52,5 +54,3 @@ class ConsoleUI:
     def display_message(self,src_mac,message):
             print(f"Mensaje de {src_mac} : {message}")
             print("messenger>",end="",flush=True)
-        
-        #Mostrar progreso de archivo

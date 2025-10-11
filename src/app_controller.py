@@ -1,13 +1,13 @@
 from protocol import MessageType
 from network_manager import NetworkManager
 from console_ui import ConsoleUI
-#Usar transferencia de archivos
+from file_transfer import FileTransferManager
 from message_handler import MessageHandler
 
 class AppController:
     def __init__(self,interface):
         self.network = NetworkManager(interface)
-        #Manejar transferencia de archivos
+        self.file_transfer = FileTransferManager(self.network)
         self.ui = ConsoleUI(self)
         self.message_handler =  MessageHandler(self.ui)
 
@@ -23,7 +23,8 @@ class AppController:
     def send_text_message(self,dest_mac,message):
         return self.network.send_message(dest_mac,MessageType.Message,message)
     
-    #Metodo para enviar archivo
+    def send_file(self,dest_mac,file_path):
+        return self.file_transfer.send_file(dest_mac,file_path)
 
     def discover_peers(self):
         return self.network.discovery.broadcast_discovery()

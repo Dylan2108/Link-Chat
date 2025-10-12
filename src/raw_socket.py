@@ -1,121 +1,45 @@
-# pyright: reportMissingImports=false
-# pyright: reportPossiblyUnboundVariable=false
-# type: ignore
-
-import platform
 import socket
+import os
 from protocol import Protocol
-
-try:
-    if platform.system() == "Windows":
-        import scapy.all as scapy
-
-        SCAPY_AVAILABLE = True
-    else:
-        import netifaces
-
-        scapy = None
-        SCAPY_AVAILABLE = False
-except ImportError:
-    scapy = None
-    SCAPY_AVAILABLE = False
-
-
 class RawSocketHandler:
-    def __init__(self):
-        self.system = platform.system()
-        self.interfaces = self.list_interfaces()
-        self.interface = ""
-        self.mac_address = ""
-        self.socket = None
-
-    def list_interfaces(self):
-        interfaces = []
-        try:
-            if self.system == "Windows" and SCAPY_AVAILABLE:
-                for iface in scapy.get_if_list():
-                    try:
-                        mac = scapy.get_if_hwaddr(iface)
-                        interfaces.append((iface, mac))
-                    except Exception:
-                        interfaces.append((iface, "desconocida"))
-            else:
-                for iface in netifaces.interfaces():
-                    try:
-                        addrs = netifaces.ifaddresses(iface)
-                        if netifaces.AF_LINK in addrs:
-                            mac = addrs[netifaces.AF_LINK][0]["addr"]
-                            interfaces.append((iface, mac))
-                    except Exception:
-                        interfaces.append((iface, "desconocida"))
-        except ImportError:
-            print("Faltan dependencias: instala 'netifaces' o 'scapy'")
-
-        return interfaces
-
-    def get_mac_address(self):
-        try:
-            if self.system == "Windows" and SCAPY_AVAILABLE:
-                return scapy.get_if_hwaddr(self.interface)
-            else:
-                with open(f"/sys/class/net/{self.interface}/address", "r") as f:
-                    return f.read().strip()
-        except Exception:
-            return "00:00:00:00:00:00"
-
-    def create_socket(self, interface):
+    def __init__(self , interface = 'ens33'):
         self.interface = interface
+        self.socket = None
         self.mac_address = self.get_mac_address()
-        if self.system == "Windows" and SCAPY_AVAILABLE:
-            if self.interface not in scapy.get_if_list():
-                return False
+    def get_mac_address(self):
+        #Obtiene la direccion Mac de la interfaz
+        try:
+            with open(f'/sys/class/net/{self.interface}/address','r') as f:
+                return f.read().strip()
+        except:
+            return "00:00:00:00:00:00"
+    def create_socket(self):
+        #Crea Socket-Raw
+        try:
+            self.socket = socket.socket(socket.AF_PACKET,socket.SOCK_RAW,socket.htons(Protocol.ETH_TYPE))
+            self.socket.bind((self.interface,0))
             return True
-        else:
-            try:
-                self.socket = socket.socket(
-                    socket.Af_PACKET, socket.SOCK_RAW, socket.htons(Protocol.ETH_TYPE)
-                )
-                self.socket.bind((self.interface, 0))
-                return True
-            except Exception as e:
-                print(f"Error: {e}")
-                return False
-
-    def send_frame(self, frame):
-        if self.system == "Windows" and SCAPY_AVAILABLE:
-            try:
-                scapy.sendp(scapy.Ether(frame), iface=self.interface, verbose=False)
-                return True
-            except Exception as e:
-                print(f"Error: {e}")
-                return False
-        elif self.socket:
+        except Exception as e:
+            print(f"Error: {e}")
+            return False
+    def send_frame(self,frame):
+        #Envio directo de frame
+        if self.socket:
             try:
                 return self.socket.send(frame)
             except Exception as e:
-                print(f"Error: {e}")
-                return False
-        return False
-
+                print(f"Error enviando: {e}")
+                return 0
+        return 0
     def receive_frame(self):
-        if self.system == "Windows" and SCAPY_AVAILABLE:
+        #Recepcion de frame
+        if self.socket:
             try:
-                pkts = scapy.sniff(iface=self.interface, count=1, timeout=1)
-                if pkts:
-                    return bytes(pkts[0])
-                return None
+                return self.socket.recvfrom(65536)
             except Exception as e:
-                print(f"Error: {e}")
-                return None
-        elif self.socket:
-            try:
-                frame, _ = self.socket.recvfrom(65536)
-                return frame
-            except Exception as e:
-                print(f"Error: {e}")
-                return None
-        return None
-
+                return None , None
+        return None , None
     def close(self):
+        #Cerrar socket
         if self.socket:
             self.socket.close()

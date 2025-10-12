@@ -57,11 +57,13 @@ class RawSocketHandler:
         try:
             if self.system == "Windows" and SCAPY_AVAILABLE:
                 return scapy.get_if_hwaddr(self.interface)
-            else:
-                with open(f"/sys/class/net/{self.interface}/address", "r") as f:
-                    return f.read().strip()
+            elif scapy is None:  # Non-windows, use netifaces
+                addrs = netifaces.ifaddresses(self.interface)
+                if netifaces.AF_LINK in addrs:
+                    return addrs[netifaces.AF_LINK][0]["addr"]
         except Exception:
             return "00:00:00:00:00:00"
+        return "00:00:00:00:00:00"
 
     def create_socket(self, interface):
         self.interface = interface

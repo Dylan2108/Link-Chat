@@ -1,7 +1,6 @@
 import struct
 from enum import Enum
 
-
 class MessageType(Enum):
     Discovery = 0x01
     Discovery_Response = 0x02
@@ -35,7 +34,7 @@ class Protocol:
         mesg_type = payload[0]
         length = struct.unpack('!H',payload[1:3])[0]
 
-        if len(payload) < 3 + length + 4:
+        if len(payload) < 3 + length + 2:
             return None
         
         data = payload[3:3 + length]

@@ -12,17 +12,19 @@ class MessageType(Enum):
     File_Complete = 0x06
     ACK = 0x07
 
-
 class Protocol:
     ETH_TYPE = 0x88B5
 
     @staticmethod
-    def create_message(message_type, data):
-        # Crea payload del protocolo
-        msg_type = struct.pack("B", message_type.value)
-        data_bytes = data.encode("utf-8") if isinstance(data, str) else data
-        length = struct.pack("!H", len(data_bytes))
+    def create_message(message_type,data):
+        #Crea payload del protocolo
+        msg_type = struct.pack('B',message_type.value)
+        data_bytes = data.encode('utf-8') if isinstance(data,str) else data
+        length = struct.pack('!H',len(data_bytes))
 
+        #Calcular checksum simple
+        checksum = sum(data_bytes) % 65536
+        checksum_bytes = struct.pack('!H',checksum)
         # Calcular checksum CRC32
         checksum = zlib.crc32(data_bytes)
         checksum_bytes = struct.pack("!I", checksum)
@@ -30,17 +32,23 @@ class Protocol:
 
     @staticmethod
     def parse_message(payload):
+        #Parsear mensaje
+        if len(payload) < 5:
         # Parsear mensaje
         # Header: 1 (type) + 2 (length) = 3 bytes. Checksum: 4 bytes.
         if len(payload) < 7:
             return None
-
+        
         mesg_type = payload[0]
-        length = struct.unpack("!H", payload[1:3])[0]
+        length = struct.unpack('!H',payload[1:3])[0]
 
         # Total length: 3 (header) + data length + 4 (checksum)
         if len(payload) < 3 + length + 4:
             return None
+        
+        data = payload[3:3 + length]
+        received_checksum = struct.unpack('!H',payload[3+length:5+length])[0]
+        calculated_checksum = sum(data) % 65536
 
         data = payload[3 : 3 + length]
         received_checksum = struct.unpack("!I", payload[3 + length : 7 + length])[0]
@@ -51,5 +59,9 @@ class Protocol:
         if received_checksum != calculated_checksum:
             print("Checksum incorrecto")
             return None
-
-        return {"type": MessageType(mesg_type), "data": data, "length": length}
+    
+        return{
+            'type' : MessageType(mesg_type),
+            'data' : data,
+            'length' : length
+        }

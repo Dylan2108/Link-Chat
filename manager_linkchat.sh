@@ -14,7 +14,7 @@ build_image() {
 
 
     echo "Construyendo nueva imagen ($IMAGE_NAME)..."   
-    sudo docker build --no-cache -t $IMAGE_NAME .
+    sudo docker build -t $IMAGE_NAME .
 
     if [ $? -eq 0 ]; then
         echo "Imagen '$IMAGE_NAME' construida correctamente."

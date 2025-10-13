@@ -1,6 +1,5 @@
 import struct
 from enum import Enum
-import zlib
 
 
 class MessageType(Enum):
@@ -25,36 +24,23 @@ class Protocol:
         #Calcular checksum simple
         checksum = sum(data_bytes) % 65536
         checksum_bytes = struct.pack('!H',checksum)
-        # Calcular checksum CRC32
-        checksum = zlib.crc32(data_bytes)
-        checksum_bytes = struct.pack("!I", checksum)
         return msg_type + length + data_bytes + checksum_bytes
 
     @staticmethod
     def parse_message(payload):
         #Parsear mensaje
         if len(payload) < 5:
-        # Parsear mensaje
-        # Header: 1 (type) + 2 (length) = 3 bytes. Checksum: 4 bytes.
-        if len(payload) < 7:
             return None
         
         mesg_type = payload[0]
         length = struct.unpack('!H',payload[1:3])[0]
 
-        # Total length: 3 (header) + data length + 4 (checksum)
         if len(payload) < 3 + length + 4:
             return None
         
         data = payload[3:3 + length]
         received_checksum = struct.unpack('!H',payload[3+length:5+length])[0]
         calculated_checksum = sum(data) % 65536
-
-        data = payload[3 : 3 + length]
-        received_checksum = struct.unpack("!I", payload[3 + length : 7 + length])[0]
-
-        # Calcular y verificar checksum
-        calculated_checksum = zlib.crc32(data)
 
         if received_checksum != calculated_checksum:
             print("Checksum incorrecto")

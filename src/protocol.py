@@ -5,10 +5,11 @@ class MessageType(Enum):
     Discovery = 0x01
     Discovery_Response = 0x02
     Message = 0x03
-    File_Request = 0x04
-    File_Chunk = 0x05
-    File_Complete = 0x06
-    ACK = 0x07
+    AllMessage = 0x04
+    File_Request = 0x05
+    File_Chunk = 0x06
+    File_Complete = 0x07
+    ACK = 0x08
 
 class Protocol:
     ETH_TYPE = 0x88B5

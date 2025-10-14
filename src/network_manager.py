@@ -59,14 +59,15 @@ class NetworkManager:
             return
         
         if msg_type == MessageType.ACK:
-            print("Mensaje enviado correctamente")
+            print(f"Mensaje enviado correctamente hacia {src_mac}")
             return
         
         #Notificar a callbacks registrados
         for callback in self.message_callbacks:
             try:
                 callback(src_mac,msg_type,data)
-                self.send_message(src_mac,MessageType.ACK,"Mensaje Recibido")
+                if msg_type != MessageType.File_Chunk and msg_type != MessageType.File_Complete and msg_type != MessageType.File_Request:
+                    self.send_message(src_mac,MessageType.ACK,"Mensaje Recibido")
             except Exception as e:
                 print(f"Error en callback : {e}")
     

@@ -23,6 +23,7 @@ class FileTransferManager:
         
         with open(file_path,"rb") as f:
             chunk_id = 0
+            transfer_state = 0
             while True:
                 chunk = f.read(self.chunk_size)
                 if not chunk:
@@ -34,6 +35,9 @@ class FileTransferManager:
                     return False
                 
                 chunk_id += 1
+                transfer_state += len(chunk)
+                progress = (transfer_state / file_size) * 100
+                print(f"Enviando {file_name}: {progress:.2f}%")
                 time.sleep(0.01)
 
             self.network.send_message(dest_mac,MessageType.File_Complete,file_name)

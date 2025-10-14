@@ -23,6 +23,10 @@ class ConsoleUI:
                     mac = command[1]
                     message = " ".join(command[2:])
                     self.controller.send_text_message(mac,message)
+                elif command[0] == "all" and command[1] == "msg" and len(command) >= 3:
+                     mac = 'ff:ff:ff:ff:ff:ff'
+                     message = " ".join(command[2:])
+                     self.controller.send_text_message(mac,message)
                 elif command[0] == "file" and len(command) >= 3:
                      mac , file_path = command[1] , command[2]
                      self.controller.send_file(mac,file_path)
@@ -37,6 +41,7 @@ class ConsoleUI:
             print("discover - Buscar dispositivos en la red")
             print("list - Listar dispositivos encontrados")
             print("msg <mac><mensaje> - Enviar mensaje")
+            print("all msg <mensaje> - Enviar mensaje a todos los dispositivos")
             print("file <mac><ruta>")
             print("quit - salir")
             print()

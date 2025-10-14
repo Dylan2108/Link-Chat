@@ -7,7 +7,7 @@ class NetworkDiscovery:
         self.frame_builder = frame_builder
         self.peers = {}
 
-    def broadcast_discovery(self):
+    def broadcast_discovery(self,message):
         #Envia mensaje de descurimiento
         broadcast_mac = 'ff:ff:ff:ff:ff:ff'
         discovery_data = f"Discovery:{self.socket_manager.mac_address}"
@@ -20,7 +20,6 @@ class NetworkDiscovery:
             Protocol.ETH_TYPE,
             payload
         )
-
         return self.socket_manager.send_frame(frame)
     
     def handle_discovery_response(self,data):
@@ -29,9 +28,6 @@ class NetworkDiscovery:
             discovery_data = data.decode('utf-8')
             if discovery_data.startswith('Discovery:'):
                 peer_mac = discovery_data.split('Discovery:')[1]
-                # if peer_mac != src_mac:
-                #     print("Error en la MAC")
-                
                 self.peers[peer_mac] = time.time()
                 # print("Dispositivo encontrado")
                 return True

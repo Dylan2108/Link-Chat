@@ -3,6 +3,7 @@ from raw_socket import RawSocketHandler
 from protocol import Protocol , MessageType
 from frame_builder import FrameBuilder
 from discovery import NetworkDiscovery
+import time
 
 class NetworkManager:
     def __init__(self,interface):
@@ -23,6 +24,10 @@ class NetworkManager:
         self.receive_thread.daemon = True
         self.receive_thread.start()
 
+        self.discovery_thread = threading.Thread(target=self.discovery_loop)
+        self.discovery_thread.daemon = True
+        self.discovery_thread.start()
+
         return True
     
     def receive_loop(self):
@@ -31,6 +36,14 @@ class NetworkManager:
             frame , addr = self.socket_manager.receive_frame()
             if frame:
                 self._process_frame(frame)
+    
+    def discovery_loop(self):
+        while self.running:
+            try:
+                self.discovery.broadcast_discovery()
+            except Exception as e:
+                print(f"Error en descubrimiento: {e}")
+            time.sleep(60)
             
     def _process_frame(self,frame):
         #Procesar Frame
@@ -49,13 +62,15 @@ class NetworkManager:
         
         if msg_type == MessageType.Discovery:
             self.discovery.handle_discovery_response(data)
-            print("Dispositivo encontrado")
             self.send_discovery_response(src_mac)
             return
         
         if msg_type == MessageType.Discovery_Response:
             self.discovery.handle_discovery_response(data)
-            print("Dispostivo encontrado")
+            peers = self.discovery.peers
+            print("Dispositivos encontrados")
+            for mac , last_seen in peers.items():
+                print(f"{mac} (ultimo visto : {last_seen})")
             return
         
         if msg_type == MessageType.ACK:

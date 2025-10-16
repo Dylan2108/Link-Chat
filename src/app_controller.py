@@ -26,12 +26,6 @@ class AppController:
     def send_file(self,dest_mac,file_path):
         return self.file_transfer.send_file(dest_mac,file_path)
 
-    def discover_peers(self):
-        return self.network.discovery.broadcast_discovery()
-
-    def discovered_peers(self):
-        return self.network.discovery.peers
-
     def get_mac_address(self):
         return self.network.socket_manager.mac_address
     

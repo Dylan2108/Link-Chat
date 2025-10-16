@@ -7,7 +7,7 @@ class NetworkDiscovery:
         self.frame_builder = frame_builder
         self.peers = {}
 
-    def broadcast_discovery(self,message):
+    def broadcast_discovery(self):
         #Envia mensaje de descurimiento
         broadcast_mac = 'ff:ff:ff:ff:ff:ff'
         discovery_data = f"Discovery:{self.socket_manager.mac_address}"
